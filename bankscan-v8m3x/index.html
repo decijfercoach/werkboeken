@@ -188,6 +188,9 @@ ul.pods span{font-size:16px;line-height:1.35}
 .toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:12px 22px;border-radius:999px;font-weight:600;font-size:15px;z-index:99;transition:transform .3s;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:calc(100% - 32px);text-align:center}
 .toast.show{transform:translate(-50%,0)}
 .printonly{display:none}
+.emb .prog{position:relative}
+.emb .toast{position:absolute;bottom:auto;transform:translate(-50%,0);opacity:0;pointer-events:none;transition:opacity .3s}
+.emb .toast.show{opacity:1}
 
 @media(min-width:720px){
  .hero .grid{grid-template-columns:1.25fr .75fr}.hero img{margin:0}
@@ -432,22 +435,6 @@ Gebruik een komma voor de centen en zet geen euroteken, geen kop en geen andere 
 </div>
 </div></section>
 
-<section><div class="wrap">
-<span class="label">Wat nu?</span>
-<h2>Het lek is dicht. <em>En wat is van jou?</em></h2>
-<p>Je weet nu wat er elke maand van je rekening wegloopt. Dat wist je een kwartier geleden nog niet.</p>
-<p>Eén ding kan je bankrekening je niet vertellen: hoeveel van wat binnenkomt écht van jou is. Een stuk is van de btw. Een stuk is van je sociale bijdragen. Een stuk is van de belastingen. Wat overblijft, dat is van jou.</p>
-<p>Zolang er geld op je rekening staat, lijkt alles goed te gaan. Tot de afrekening van de btw komt. Of je belastingbrief. Of een kwartaal sociale bijdragen. Dan blijkt plots dat dat geld eigenlijk nooit van jou was.</p>
-<div class="tip">🎧 Veel ondernemers denken dat hun boekhouder bepaalt hoeveel loon ze zichzelf mogen uitbetalen. Het werkt net omgekeerd. In <a href="https://open.spotify.com/episode/1pmVEJmthuzBImPtgjlxtX" target="_blank" rel="noopener">aflevering 9 van mijn podcast Cijferpraat</a> leg ik uit waarom.</div>
-<p>Dat rekenen we samen uit op <strong>zondag 6 december om 20u</strong>, in mijn gratis online training:</p>
-<p class="quote" style="margin:0 0 24px">Leer in 45 minuten hoeveel van je omzet echt van jou is.</p>
-<p id="trainmail">Je krijgt de uitnodiging van mij in je mailbox. Hou ze in het oog.</p>
-<div class="btns">
- <a class="btn" id="trainlink" href="#" hidden>Ik schrijf me in voor de training</a>
- <button class="btn line" id="icsTrain" type="button">📅 Zet 6 december in mijn agenda</button>
-</div>
-</div></section>
-
 <section class="sky"><div class="wrap">
 <span class="label">Jouw volgende stap</span>
 <h2>Elk kwartaal <em>opnieuw</em></h2>
@@ -477,13 +464,12 @@ Gebruik een komma voor de centen en zet geen euroteken, geen kop en geen andere 
 <p style="margin-top:30px">Liefs,<br><strong>Kimberley | De Cijfercoach</strong></p>
 </div></section>
 
-<div class="foot"><a href="https://decijfercoach.be">WWW.DECIJFERCOACH.BE</a> &nbsp;·&nbsp; <a href="https://www.instagram.com/de_cijfercoach/">@DE_CIJFERCOACH</a>
+<div class="foot"><a href="https://decijfercoach.be" target="_top">WWW.DECIJFERCOACH.BE</a> &nbsp;·&nbsp; <a href="https://www.instagram.com/de_cijfercoach/">@DE_CIJFERCOACH</a>
 <button class="reset" id="reset" type="button">Alles wissen en opnieuw beginnen</button></div>
 <div class="toast" id="toast" role="status"></div>
 
 <script>
 (function(){
-var TRAINING_URL=""; // vul hier de link naar de inschrijfpagina van de training in zodra die bestaat
 var KEY="bankscan_v2", OLD="bankscan_lekken_v1";
 var MULT={maand:12,kwartaal:4,jaar:1};
 var S;
@@ -502,7 +488,19 @@ function num(v){v=String(v||"").replace(/[€\s ]/g,"");if(!v)return 0;
 function eur(n,dec){return "€ "+n.toLocaleString("nl-BE",{minimumFractionDigits:dec?2:0,maximumFractionDigits:dec?2:0})}
 function yr(r){return num(r.b)*(MULT[r.f]||12)}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
-var tt;function toast(m){var t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(function(){t.classList.remove("show")},2600)}
+/* ingesloten op decijfercoach.be: scrollen en meldingen via de pagina errond */
+var EMB=false;try{EMB=window.self!==window.top}catch(e){EMB=true}
+var VP=null;
+if(EMB){document.documentElement.classList.add("emb");
+ window.addEventListener("message",function(e){if(e.data&&e.data.type==="dcc-viewport"){VP=e.data;placeToast()}})}
+function placeToast(){if(!EMB)return;var t=$("toast");var top=VP?VP.top+VP.h-90:document.body.getBoundingClientRect().height/2;t.style.top=Math.max(10,Math.min(top,document.body.scrollHeight-60))+"px"}
+function goTo(el){if(!el)return;
+ if(EMB){var y=el.getBoundingClientRect().top+(window.pageYOffset||0);try{window.parent.postMessage({type:"dcc-scroll",y:Math.max(0,y-16)},"*")}catch(e){}}
+ else el.scrollIntoView({behavior:"smooth"})}
+document.addEventListener("click",function(e){var a=e.target.closest('a[href^="#"]');if(!a||a.getAttribute("href").length<2)return;var el=document.querySelector(a.getAttribute("href"));if(!el)return;e.preventDefault();goTo(el)});
+var tt;function toast(m){var t=$("toast");t.textContent=m;
+ placeToast();
+ t.classList.add("show");clearTimeout(tt);tt=setTimeout(function(){t.classList.remove("show")},2600)}
 
 /* prompt */
 function buildPrompt(){
@@ -591,7 +589,6 @@ function ics(evs,file){var now=new Date(),st=now.getUTCFullYear()+p2(now.getUTCM
  var blob=new Blob([L.join("\r\n")],{type:"text/calendar;charset=utf-8"}),a=document.createElement("a");
  a.href=URL.createObjectURL(blob);a.download=file;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500);
  toast("Open het gedownloade bestand, dan staat het in je agenda.")}
-$("icsTrain").addEventListener("click",function(){ics([{s:new Date(2026,11,6,20,0),e:new Date(2026,11,6,20,45),t:"Gratis training De Cijfercoach: hoeveel van je omzet is echt van jou?",d:"Online training van Kimberley, De Cijfercoach. Hou je mailbox in het oog voor de link."+(TRAINING_URL?"\n"+TRAINING_URL:"")}],"training-6-december.ics")});
 $("icsKwartaal").addEventListener("click",function(){var ds=[[2027,0,4],[2027,3,5],[2027,6,5],[2027,9,4]];
  ics(ds.map(function(x){return {s:new Date(x[0],x[1],x[2],9,0),e:new Date(x[0],x[1],x[2],9,15),t:"Bankscan: vind je geldlekken",d:"Download de laatste drie maanden van je zakelijke rekening, plak de prompt uit je werkboek De bankscan en vergelijk met je vorige lijst. Een kwartier, meer niet."}}),"kwartaalscan-2027.ics")});
 $("print").addEventListener("click",function(){window.print()});
@@ -618,14 +615,22 @@ function paintDone(){var n=0;document.querySelectorAll("[data-done]").forEach(fu
  document.querySelectorAll("#dots a").forEach(function(a){a.classList.toggle("done",!!S.done[a.dataset.s])});
  $("bar").style.width=(n/5*100)+"%";$("pct").textContent=n+" van 5 stappen klaar"}
 document.querySelectorAll("[data-done]").forEach(function(b){b.addEventListener("click",function(){var s=b.dataset.done;S.done[s]=!S.done[s];save();paintDone();
- if(S.done[s]){var nx=$("stap"+(+s+1))||$("uitslag");if(+s<5)toast("Stap "+s+" afgevinkt. Op naar stap "+(+s+1)+".");else toast("Alle stappen klaar. Bekijk je uitslag 👇");setTimeout(function(){nx.scrollIntoView({behavior:"smooth"})},350)}})});
+ if(S.done[s]){var nx=$("stap"+(+s+1))||$("uitslag");if(+s<5)toast("Stap "+s+" afgevinkt. Op naar stap "+(+s+1)+".");else toast("Alle stappen klaar. Bekijk je uitslag 👇");setTimeout(function(){goTo(nx)},350)}})});
 if("IntersectionObserver" in window){var io=new IntersectionObserver(function(en){en.forEach(function(x){if(x.isIntersecting){var s=x.target.id.replace("stap","");document.querySelectorAll("#dots a").forEach(function(a){a.classList.toggle("cur",a.dataset.s==s)})}})},{rootMargin:"-40% 0px -55% 0px"});
  [1,2,3,4,5].forEach(function(n){io.observe($("stap"+n))})}
 
 $("reset").addEventListener("click",function(){if(confirm("Alles wat je invulde in dit werkboek wissen?")){S=blank();save();render();renderPrompt();paintQ();paintDone();toast("Alles gewist.")}});
-if(TRAINING_URL){$("trainlink").href=TRAINING_URL;$("trainlink").hidden=false;$("trainmail").hidden=true}
 
 renderPrompt();render();paintQ();paintDone();
+})();
+</script>
+<script>
+/* koppeling met de insluitcode op decijfercoach.be: hoogte doorgeven */
+(function(){
+ function hoogte(){try{window.parent.postMessage({type:'dcc-height',height:Math.ceil(document.body.getBoundingClientRect().height)},'*')}catch(e){}}
+ if(window.ResizeObserver){new ResizeObserver(hoogte).observe(document.body)}
+ window.addEventListener('message',function(e){if(e.data&&e.data.type==='dcc-vraag-hoogte')hoogte()});
+ window.addEventListener('load',function(){try{window.parent.postMessage({type:'dcc-nav'},'*')}catch(e){}hoogte()});
 })();
 </script>
 </body>
