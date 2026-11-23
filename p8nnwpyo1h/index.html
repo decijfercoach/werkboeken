@@ -1091,6 +1091,7 @@ window.scrollTo(0,0);
 function meldHoogte(){ try{ window.parent.postMessage({type:'dcc-height', height: document.documentElement.scrollHeight}, '*'); }catch(e){} }
 if(window.ResizeObserver){ new ResizeObserver(meldHoogte).observe(document.body); }
 window.addEventListener('load', meldHoogte);
+window.addEventListener('message', function(e){ if(e.data && e.data.type === 'dcc-vraag-hoogte'){ meldHoogte(); } });
 (function(){
   var orig = Element.prototype.scrollIntoView;
   Element.prototype.scrollIntoView = function(opt){
